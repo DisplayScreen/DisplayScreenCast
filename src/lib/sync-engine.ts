@@ -16,6 +16,39 @@ export function broadcastLocalMessage(type: string, payload: unknown) {
       console.error('Failed to broadcast message:', err);
     }
   }
+
+  // Also push to Cloud Sync API asynchronously for cross-device synchronization
+  if (typeof window !== 'undefined' && (type === 'EVENT_STATE_UPDATE' || type === 'SCENES_UPDATE' || type === 'PRESENCE_PING')) {
+    pushCloudSync(type, payload).catch(() => {});
+  }
+}
+
+export async function pushCloudSync(type: string, payload: unknown) {
+  try {
+    await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, payload }),
+      keepalive: true,
+    });
+  } catch {
+    // Non-fatal if offline
+  }
+}
+
+export async function fetchCloudSyncState() {
+  try {
+    const res = await fetch('/api/sync', {
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch {
+    // Non-fatal if network drop
+  }
+  return null;
 }
 
 export function loadLocalData<T>(key: string, fallback: T): T {

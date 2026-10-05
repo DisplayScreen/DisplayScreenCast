@@ -62,6 +62,26 @@ export function getActiveFirebaseConfig(): FirebaseConnectionConfig | null {
   return null;
 }
 
+export async function syncSharedFirebaseConfig(): Promise<FirebaseConnectionConfig | null> {
+  if (typeof window === 'undefined') return null;
+  const current = getActiveFirebaseConfig();
+  if (current) return current;
+
+  try {
+    const res = await fetch('/api/config');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.firebaseConfig && data.firebaseConfig.apiKey) {
+        saveStoredFirebaseConfig(data.firebaseConfig);
+        return data.firebaseConfig;
+      }
+    }
+  } catch {
+    // Non-fatal
+  }
+  return null;
+}
+
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
 let storage: FirebaseStorage | null = null;

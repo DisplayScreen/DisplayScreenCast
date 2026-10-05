@@ -48,6 +48,13 @@ export function FirebaseConfigModal({ isOpen, onClose }: FirebaseConfigModalProp
     };
 
     saveStoredFirebaseConfig(config);
+    // Push to server /api/config so all connected TVs/screens automatically receive it
+    fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firebaseConfig: config }),
+    }).catch(() => {});
+
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -57,6 +64,11 @@ export function FirebaseConfigModal({ isOpen, onClose }: FirebaseConfigModalProp
 
   const handleClear = () => {
     clearStoredFirebaseConfig();
+    fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firebaseConfig: null }),
+    }).catch(() => {});
     window.location.reload();
   };
 

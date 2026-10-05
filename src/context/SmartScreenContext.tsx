@@ -25,6 +25,8 @@ import {
   saveLocalData,
   broadcastLocalMessage,
   getOrCreateDisplaySessionId,
+  pushCloudSync,
+  fetchCloudSyncState,
 } from '@/lib/sync-engine';
 import {
   doc,
@@ -256,9 +258,66 @@ export function SmartScreenProvider({ children }: { children: React.ReactNode })
         unsubPresence();
       };
     } else {
-      // Local BroadcastChannel sync across tabs
+      // 1. Initial Cloud Sync State Fetch on Mount (instant cross-device sync)
+      const fetchInitialCloudState = async () => {
+        try {
+          const cloudData = await fetchCloudSyncState();
+          if (cloudData && cloudData.eventState) {
+            setLastSyncTime(Date.now());
+            setEventState(cloudData.eventState);
+            if (cloudData.scenes && cloudData.scenes.length > 0) {
+              setScenes(cloudData.scenes);
+            }
+            if (cloudData.announcements && cloudData.announcements.length > 0) {
+              setAnnouncements(cloudData.announcements);
+            }
+            if (cloudData.schedule && cloudData.schedule.length > 0) {
+              setSchedule(cloudData.schedule);
+            }
+            if (cloudData.presence) {
+              setPresenceMap(cloudData.presence);
+            }
+          }
+        } catch (err) {
+          console.warn('Initial cloud state fetch error:', err);
+        }
+      };
+      fetchInitialCloudState();
+
+      // 2. High-Frequency Cross-Device Cloud Poller (1000ms)
+      const cloudPoller = setInterval(async () => {
+        try {
+          const cloudData = await fetchCloudSyncState();
+          if (cloudData && cloudData.eventState) {
+            setLastSyncTime(Date.now());
+            setEventState((prev) => {
+              const cloudVersion = cloudData.eventState.version || 0;
+              const localVersion = prev.version || 0;
+              if (
+                cloudVersion > localVersion ||
+                cloudData.eventState.activeSceneId !== prev.activeSceneId ||
+                cloudData.eventState.overrideMode !== prev.overrideMode ||
+                cloudData.eventState.timer?.status !== prev.timer?.status ||
+                cloudData.eventState.bannerAnnouncement?.text !== prev.bannerAnnouncement?.text
+              ) {
+                return cloudData.eventState;
+              }
+              return prev;
+            });
+
+            if (cloudData.presence) {
+              setPresenceMap((prev) => ({ ...prev, ...cloudData.presence }));
+            }
+          }
+        } catch {
+          // Non-fatal if temporary network drop
+        }
+      }, 1000);
+
+      // 3. Local BroadcastChannel sync across tabs on same machine
+      let bc: BroadcastChannel | null = null;
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-        const bc = new BroadcastChannel('smartscreen_realtime_mesh');
+        bc = new BroadcastChannel('smartscreen_realtime_mesh');
         bc.onmessage = (event) => {
           const { type, payload } = event.data || {};
           setLastSyncTime(Date.now());
@@ -279,11 +338,12 @@ export function SmartScreenProvider({ children }: { children: React.ReactNode })
             }));
           }
         };
-
-        return () => {
-          bc.close();
-        };
       }
+
+      return () => {
+        clearInterval(cloudPoller);
+        if (bc) bc.close();
+      };
     }
   }, []);
 
@@ -340,6 +400,7 @@ export function SmartScreenProvider({ children }: { children: React.ReactNode })
           updatedAt: Date.now(),
         };
         broadcastLocalMessage('EVENT_STATE_UPDATE', versioned);
+        pushCloudSync('EVENT_STATE_UPDATE', versioned);
         saveLocalData('smartscreen_event_state', versioned);
 
         const { db } = initializeFirebaseServices();
