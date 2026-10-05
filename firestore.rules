@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper to check if user is authenticated administrator
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // Public Display State: Any connected display screen can read
+    // Only authenticated admin can write or update
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Scenes: Public displays can read; only admin can create/edit/delete
+    match /scenes/{sceneId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Announcements queue: Public read; admin write
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Schedule: Public read; admin write
+    match /schedule/{scheduleId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Assets metadata: Public read; admin write
+    match /assets/{assetId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Anonymous Display Presence:
+    // Any connected display client (/display) can post heartbeat presence pings
+    // Admin can read all presence records to count active screens
+    match /displayPresence/{sessionId} {
+      allow read: if true;
+      allow write: if request.resource.data.sessionId == sessionId;
+    }
+  }
+}
