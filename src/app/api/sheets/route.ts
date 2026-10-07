@@ -143,7 +143,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const rows = parseCsv(rawCsvData);
+    // Normalize literal escaped newlines if passed in JSON
+    let normalizedCsv = rawCsvData;
+    if (normalizedCsv.includes('\\n') && !normalizedCsv.includes('\n')) {
+      normalizedCsv = normalizedCsv.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n');
+    }
+
+    const rows = parseCsv(normalizedCsv);
     if (rows.length === 0) {
       return NextResponse.json(
         { error: 'No valid data rows found in spreadsheet.' },
@@ -189,8 +195,9 @@ export async function POST(request: Request) {
       });
     }
 
-    // Fallbacks if headers didn't match keywords
-    const dataRows = (nameIdx !== -1 || scoreIdx !== -1) ? rows.slice(1) : rows;
+    // Fallbacks if headers didn't match keywords or if single data row
+    const hasHeaderMatch = (nameIdx !== -1 || scoreIdx !== -1);
+    const dataRows = (hasHeaderMatch && rows.length > 1) ? rows.slice(1) : rows;
 
     if (nameIdx === -1) {
       nameIdx = 0; // Default to first column
