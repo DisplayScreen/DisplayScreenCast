@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useSmartScreen } from '@/context/SmartScreenContext';
 import { AdminHeader } from './AdminHeader';
 import { QuickBroadcastBar } from './QuickBroadcastBar';
-import { PresentationControls } from './PresentationControls';
 import { DisplayPreview } from './DisplayPreview';
 import { SceneManager } from './SceneManager';
 import { SceneEditor } from './SceneEditor/SceneEditor';
@@ -134,7 +133,7 @@ export function AdminDashboard() {
               {/* Tab: CONSOLE (Main Central Operations Console) */}
               {activeTab === 'console' && (
                 <div className="space-y-6 max-w-7xl mx-auto">
-                  {/* Quick Broadcast Bar */}
+                  {/* Quick Broadcast & Presentation Director Bar */}
                   <QuickBroadcastBar
                     onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)}
                     onSelectPreset={(type) => {
@@ -142,9 +141,6 @@ export function AdminDashboard() {
                       setConsoleRightTab('customizer');
                     }}
                   />
-
-                  {/* Presentation Mode Deck */}
-                  <PresentationControls />
 
                   {/* Live Simulator & Side Panels */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -20,6 +20,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { ImageSelectField } from './AssetPickerModal';
+import { GoogleSheetsImporter } from './GoogleSheetsImporter';
 
 interface QuickPresetCustomizerProps {
   selectedPresetType?: string;
@@ -932,6 +933,9 @@ export function QuickPresetCustomizer({
             label: 'Subtitle / Realtime Standings',
             element: findElement('el-res-subtitle', ['Subtitle', 'Sub']),
           })}
+
+          {/* Google Sheets Leaderboard Live Sync & CSV Upload Tool */}
+          <GoogleSheetsImporter />
 
           {/* Leaderboard Table Customization & Placement */}
           {(() => {

@@ -171,49 +171,90 @@ export function ElementRenderer({
 
     case 'leaderboard': {
       const items = content.leaderboardData || [];
+      const isCompact = items.length > 5;
+      const isUltraCompact = items.length > 8;
+
       return (
         <div
           style={containerStyle}
-          className="flex flex-col gap-2 p-3 justify-center"
+          className="flex flex-col justify-center w-full h-full p-2 lg:p-4 select-none"
         >
-          <div className="grid grid-cols-12 gap-2 text-[0.9cqw] font-bold text-slate-400 uppercase tracking-wider px-4 py-1">
+          {/* Header Row */}
+          <div className="grid grid-cols-12 gap-2 text-[0.85cqw] font-mono font-bold text-neutral-400 uppercase tracking-widest px-5 py-1 mb-1 border-b border-white/[0.06]">
             <span className="col-span-1 text-center">Rank</span>
-            <span className="col-span-7">Team / Participant</span>
+            <span className="col-span-7">Team / Contender</span>
             <span className="col-span-2 text-right">Points</span>
-            <span className="col-span-2 text-center">Status</span>
+            <span className="col-span-2 text-center">Standing</span>
           </div>
-          <div className="flex flex-col gap-2">
-            {items.map((row, idx) => (
-              <div
-                key={idx}
-                className={`grid grid-cols-12 items-center px-4 py-2.5 rounded-xl border transition-all ${
-                  row.rank === 1
-                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-200 shadow-lg shadow-amber-950/20'
-                    : row.rank === 2
-                    ? 'bg-slate-300/10 border-slate-300/30 text-slate-200'
-                    : row.rank === 3
-                    ? 'bg-amber-700/15 border-amber-700/30 text-amber-300'
-                    : 'bg-slate-900/50 border-slate-800 text-slate-300'
-                }`}
-              >
-                <div className="col-span-1 text-center font-black text-[1.2cqw]">
-                  {row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : (
-                    <span className="text-white font-mono font-bold">#{row.rank}</span>
-                  )}
+
+          {/* Leaderboard Rows */}
+          <div className={`flex flex-col ${isUltraCompact ? 'gap-1' : isCompact ? 'gap-1.5' : 'gap-2.5'}`}>
+            {items.map((row, idx) => {
+              const isFirst = row.rank === 1;
+              const isSecond = row.rank === 2;
+              const isThird = row.rank === 3;
+
+              let rowStyle = 'bg-neutral-900/40 border-white/[0.08] text-neutral-200';
+              if (isFirst) {
+                rowStyle = 'bg-gradient-to-r from-amber-500/25 via-neutral-900/80 to-neutral-950/90 border-amber-400/60 text-white shadow-xl shadow-amber-950/30 ring-1 ring-amber-400/20';
+              } else if (isSecond) {
+                rowStyle = 'bg-gradient-to-r from-slate-300/20 via-neutral-900/80 to-neutral-950/90 border-slate-300/40 text-white shadow-lg shadow-slate-900/40';
+              } else if (isThird) {
+                rowStyle = 'bg-gradient-to-r from-amber-700/20 via-neutral-900/80 to-neutral-950/90 border-amber-600/40 text-white shadow-lg shadow-amber-950/20';
+              }
+
+              const rowPadding = isUltraCompact ? 'py-1.5 px-4' : isCompact ? 'py-2 px-5' : 'py-3 px-5';
+              const textScale = isUltraCompact ? 'text-[1.05cqw]' : isCompact ? 'text-[1.15cqw]' : 'text-[1.3cqw]';
+
+              return (
+                <div
+                  key={idx}
+                  className={`grid grid-cols-12 items-center rounded-2xl border backdrop-blur-xl transition-all ${rowPadding} ${rowStyle}`}
+                >
+                  {/* Rank Column */}
+                  <div className="col-span-1 flex items-center justify-center font-black">
+                    {isFirst ? (
+                      <span className="text-[1.5cqw] drop-shadow-md">🥇</span>
+                    ) : isSecond ? (
+                      <span className="text-[1.4cqw] drop-shadow-md">🥈</span>
+                    ) : isThird ? (
+                      <span className="text-[1.4cqw] drop-shadow-md">🥉</span>
+                    ) : (
+                      <span className="text-white font-mono font-black text-[1.1cqw] px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/[0.08]">
+                        #{row.rank}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Team Name Column */}
+                  <div className={`col-span-7 font-black tracking-wide truncate text-white ${textScale}`}>
+                    {row.name}
+                  </div>
+
+                  {/* Points / Score Column (Pure White Bold Monospace) */}
+                  <div className="col-span-2 text-right font-mono font-black text-white drop-shadow-sm">
+                    <span className={`${textScale}`}>{row.score}</span>
+                  </div>
+
+                  {/* Status / Badge Column */}
+                  <div className="col-span-2 flex items-center justify-center">
+                    <span
+                      className={`px-3 py-1 rounded-full text-[0.8cqw] font-bold uppercase tracking-wider backdrop-blur-md ${
+                        isFirst
+                          ? 'bg-amber-400/20 text-amber-200 border border-amber-400/40'
+                          : isSecond
+                          ? 'bg-slate-300/20 text-slate-100 border border-slate-300/30'
+                          : isThird
+                          ? 'bg-amber-600/20 text-amber-200 border border-amber-600/30'
+                          : 'bg-white/[0.08] text-neutral-300 border border-white/[0.08]'
+                      }`}
+                    >
+                      {row.badge || 'Finalist'}
+                    </span>
+                  </div>
                 </div>
-                <div className="col-span-7 font-bold text-[1.2cqw] tracking-wide truncate text-white">
-                  {row.name}
-                </div>
-                <div className="col-span-2 text-right font-mono font-bold text-[1.2cqw] text-white">
-                  {row.score}
-                </div>
-                <div className="col-span-2 text-center">
-                  <span className="px-2.5 py-1 rounded-full text-[0.8cqw] font-semibold bg-white/10 text-neutral-300">
-                    {row.badge || 'Contender'}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       );
@@ -229,23 +270,23 @@ export function ElementRenderer({
           {rules.map((rule, idx) => (
             <div
               key={idx}
-              className="flex flex-col justify-between p-5 rounded-2xl bg-neutral-900/60 border border-white/10 shadow-xl backdrop-blur-xl"
+              className="flex flex-col justify-between p-5 rounded-2xl bg-neutral-900/70 border border-white/[0.08] shadow-2xl backdrop-blur-2xl hover:border-blue-500/30 transition-all"
             >
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600/20 text-white font-mono font-black text-[1.1cqw] border border-blue-500/30">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-blue-600/20 text-white font-mono font-black text-[1.15cqw] border border-blue-500/40 shadow-sm">
                     {rule.number}
                   </span>
                   {rule.tag && (
-                    <span className="px-2.5 py-0.5 rounded-full text-[0.8cqw] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                    <span className="px-3 py-1 rounded-full text-[0.8cqw] font-bold uppercase tracking-wider bg-white/[0.06] text-neutral-300 border border-white/[0.08]">
                       {rule.tag}
                     </span>
                   )}
                 </div>
-                <h4 className="text-[1.3cqw] font-bold text-white mb-1.5 leading-tight">
+                <h4 className="text-[1.35cqw] font-black text-white mb-2 leading-tight">
                   {rule.title}
                 </h4>
-                <p className="text-[0.95cqw] text-slate-300 leading-relaxed">
+                <p className="text-[0.95cqw] text-neutral-300 leading-relaxed font-normal">
                   {rule.description}
                 </p>
               </div>

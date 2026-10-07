@@ -3,6 +3,7 @@
 import React from 'react';
 import { Scene, SceneElement } from '@/types/smartscreen';
 import { ImageSelectField } from '../AssetPickerModal';
+import { GoogleSheetsImporter } from '../GoogleSheetsImporter';
 import {
   QrCode,
   Plus,
@@ -450,6 +451,9 @@ export function TemplateCustomizer({
               className="w-full bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-blue-500"
             />
           </div>
+
+          {/* Google Sheets Leaderboard Live Sync Tool */}
+          <GoogleSheetsImporter isCompact={true} />
 
           {/* Standings Table Rows (Numbers White, Buttons Blue) */}
           <div className="space-y-2.5 pt-2 border-t border-white/10">

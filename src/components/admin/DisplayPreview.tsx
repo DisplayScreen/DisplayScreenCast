@@ -66,7 +66,7 @@ export function DisplayPreview() {
             target="_blank"
             rel="noopener noreferrer"
             title="Open /display in dedicated window"
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-colors border border-white/[0.08]"
           >
             <Maximize2 className="w-3.5 h-3.5" />
           </a>
@@ -74,14 +74,14 @@ export function DisplayPreview() {
       </div>
 
       {/* Simulator Screen Frame */}
-      <div className="p-4 bg-slate-950/60 flex items-center justify-center min-h-[300px] lg:min-h-[420px]">
+      <div className="p-4 bg-black/60 flex items-center justify-center min-h-[300px] lg:min-h-[420px]">
         <div
-          className={`relative w-full rounded-xl overflow-hidden border border-slate-800 shadow-2xl transition-all ${
+          className={`relative w-full rounded-xl overflow-hidden border border-white/[0.08] shadow-2xl transition-all ${
             aspectRatio === '16:9' ? 'aspect-video max-w-4xl' : 'aspect-[4/3] max-w-2xl'
           }`}
         >
           {isBlackout ? (
-            <div className="w-full h-full bg-black flex items-center justify-center text-zinc-600 font-mono text-xs">
+            <div className="w-full h-full bg-black flex items-center justify-center text-neutral-600 font-mono text-xs">
               STAGE BLACKOUT ACTIVE
             </div>
           ) : isEmergency ? (
@@ -98,7 +98,7 @@ export function DisplayPreview() {
               />
             </div>
           ) : (
-            <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-500 text-xs">
+            <div className="w-full h-full bg-neutral-950 flex items-center justify-center text-neutral-500 text-xs">
               No active scene selected
             </div>
           )}
@@ -106,14 +106,14 @@ export function DisplayPreview() {
       </div>
 
       {/* Simulator Status Bar */}
-      <div className="px-4 py-2 bg-slate-900/60 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+      <div className="px-4 py-2 bg-neutral-950/80 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-neutral-400 font-mono">
         <span className="truncate">
           Current Broadcast: <strong className="text-white">{activeScene?.name}</strong>
         </span>
         <span className="flex items-center gap-2">
-          <span>Type: {activeScene?.type}</span>
+          <span>Type: <strong className="text-white">{activeScene?.type}</strong></span>
           <span>•</span>
-          <span>Mode: {aspectRatio}</span>
+          <span>Mode: <strong className="text-white">{aspectRatio}</strong></span>
         </span>
       </div>
     </div>
